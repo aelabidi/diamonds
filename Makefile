@@ -1,4 +1,9 @@
 
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
 
 setup : 
 	pip install -e . 

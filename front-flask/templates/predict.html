@@ -1,150 +1,107 @@
 {% extends "base.html" %}
-{% block title %}Predict – Diamonds Price Prediction{% endblock %}
+{% block title %}Diamond Price Predictor{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2>Predict Diamond Price</h2>
+<div class="layout">
+    <aside class="sidebar card-dark">
+        <h3>API distante</h3>
+        <a class="api-link" href="{{ api_predict_url }}" target="_blank" rel="noopener">
+            {{ api_predict_url }}
+        </a>
+        <form method="post" action="{{ url_for('predict') }}" class="stack-sm">
+            <input type="hidden" name="_action" value="check_api" />
+            <button type="submit" class="btn btn-ghost">Tester la connexion</button>
+        </form>
 
-    <!-- Clockwise-rotating cats -->
-    <div class="cat-container">
-        <span class="cat">🐱</span>
-        <span class="cat">🐈</span>
-        <span class="cat">😸</span>
-    </div>
+        {% if api_ok is true %}
+        <div class="alert alert-success">{{ status_message }}</div>
+        {% elif api_ok is false %}
+        <div class="alert alert-error">{{ status_message }}</div>
+        {% endif %}
+    </aside>
 
-    {% if error %}
-    <div class="alert alert-error">{{ error }}</div>
-    {% endif %}
+    <section class="main-panel card-dark">
+        <h1>Diamond Price Predictor</h1>
+        <p class="subtitle">Estimez le prix d'un diamant avec les caracteristiques standards.</p>
 
-    {% if prediction is not none %}
-    <div class="alert alert-success">
-        Predicted Price: <span class="price-tag">${{ "%.2f"|format(prediction) }}</span>
-    </div>
-    {% endif %}
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
 
-    <form method="post" action="{{ url_for('predict') }}">
+        <form method="post" action="{{ url_for('predict') }}" class="stack-md">
+            <input type="hidden" name="_action" value="predict" />
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="carat">
-                    Carat
-                    <span class="slider-value" id="carat-val">
-                        {{ form_data.get('carat', '0.5') }}
-                    </span>
-                </label>
-                <input
-                    type="range" id="carat" name="carat"
-                    class="form-control"
-                    min="0.2" max="5.0" step="0.1"
-                    value="{{ form_data.get('carat', '0.5') }}"
-                    oninput="document.getElementById('carat-val').textContent = this.value"
-                />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="carat">Carat</label>
+                    <input type="number" id="carat" name="carat" class="form-control" min="0.2" max="5.0" step="0.01" value="{{ form_data.get('carat', '0.77') }}" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="clarity">Clarity</label>
+                    <select id="clarity" name="clarity" class="form-control">
+                        {% for opt in clarity_options %}
+                        <option value="{{ opt }}" {{ 'selected' if form_data.get('clarity', 'SI1') == opt }}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="x">x</label>
+                    <input type="number" id="x" name="x" class="form-control" min="0" max="15" step="0.01" value="{{ form_data.get('x', '5.64') }}" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="cut">Cut</label>
+                    <select id="cut" name="cut" class="form-control">
+                        {% for opt in cut_options %}
+                        <option value="{{ opt }}" {{ 'selected' if form_data.get('cut', 'Ideal') == opt }}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="depth">Depth</label>
+                    <input type="number" id="depth" name="depth" class="form-control" min="50" max="75" step="0.01" value="{{ form_data.get('depth', '61.70') }}" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="y">y</label>
+                    <input type="number" id="y" name="y" class="form-control" min="0" max="15" step="0.01" value="{{ form_data.get('y', '5.67') }}" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <select id="color" name="color" class="form-control">
+                        {% for opt in color_options %}
+                        <option value="{{ opt }}" {{ 'selected' if form_data.get('color', 'E') == opt }}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="table">Table</label>
+                    <input type="number" id="table" name="table" class="form-control" min="50" max="75" step="0.01" value="{{ form_data.get('table', '56.00') }}" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="z">z</label>
+                    <input type="number" id="z" name="z" class="form-control" min="0" max="15" step="0.01" value="{{ form_data.get('z', '3.47') }}" required />
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="depth">
-                    Depth
-                    <span class="slider-value" id="depth-val">
-                        {{ form_data.get('depth', '61.0') }}
-                    </span>
-                </label>
-                <input
-                    type="range" id="depth" name="depth"
-                    class="form-control"
-                    min="50.0" max="70.0" step="0.1"
-                    value="{{ form_data.get('depth', '61.0') }}"
-                    oninput="document.getElementById('depth-val').textContent = this.value"
-                />
+            <div class="actions-grid">
+                <button type="submit" class="btn btn-primary">Predire le prix</button>
+                <button type="reset" class="btn btn-ghost">Reinitialiser</button>
             </div>
+        </form>
 
-            <div class="form-group">
-                <label for="table">
-                    Table
-                    <span class="slider-value" id="table-val">
-                        {{ form_data.get('table', '55.0') }}
-                    </span>
-                </label>
-                <input
-                    type="range" id="table" name="table"
-                    class="form-control"
-                    min="50.0" max="70.0" step="0.1"
-                    value="{{ form_data.get('table', '55.0') }}"
-                    oninput="document.getElementById('table-val').textContent = this.value"
-                />
-            </div>
+        {% if prediction is not none %}
+        <div class="result-box">
+            <span class="result-label">Prix estime</span>
+            <span class="result-price">${{ "%.2f"|format(prediction) }}</span>
         </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="cut">Cut</label>
-                <select id="cut" name="cut" class="form-control">
-                    {% for opt in cut_options %}
-                    <option value="{{ opt }}"
-                        {{ 'selected' if form_data.get('cut') == opt }}>
-                        {{ opt }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="color">Color</label>
-                <select id="color" name="color" class="form-control">
-                    {% for opt in color_options %}
-                    <option value="{{ opt }}"
-                        {{ 'selected' if form_data.get('color') == opt }}>
-                        {{ opt }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="clarity">Clarity</label>
-                <select id="clarity" name="clarity" class="form-control">
-                    {% for opt in clarity_options %}
-                    <option value="{{ opt }}"
-                        {{ 'selected' if form_data.get('clarity') == opt }}>
-                        {{ opt }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="x">X – length (mm)</label>
-                <input
-                    type="number" id="x" name="x"
-                    class="form-control"
-                    min="0" max="10" step="0.1"
-                    value="{{ form_data.get('x', '0.0') }}"
-                />
-            </div>
-
-            <div class="form-group">
-                <label for="y">Y – width (mm)</label>
-                <input
-                    type="number" id="y" name="y"
-                    class="form-control"
-                    min="0" max="10" step="0.1"
-                    value="{{ form_data.get('y', '0.0') }}"
-                />
-            </div>
-
-            <div class="form-group">
-                <label for="z">Z – depth (mm)</label>
-                <input
-                    type="number" id="z" name="z"
-                    class="form-control"
-                    min="0" max="10" step="0.1"
-                    value="{{ form_data.get('z', '0.0') }}"
-                />
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">✨ Predict Price</button>
-    </form>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

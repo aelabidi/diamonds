@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Diamond Price Predictor{% endblock %}
+
+{% block content %}
+<div class="layout">
+    <aside class="sidebar card-dark">
+        <h3>API distante</h3>
+        <a class="api-link" id="api-url-link" href="/predict_one" target="_blank" rel="noopener">
+            {{ request.url.scheme }}://{{ request.url.netloc }}/predict_one
+        </a>
+        <div class="stack-sm">
+            <button class="btn btn-ghost" onclick="testConnection()">Tester la connexion</button>
+        </div>
+        <div id="conn-status"></div>
+    </aside>
+
+    <section class="main-panel card-dark">
+        <h1>Diamond Price Predictor</h1>
+        <p class="subtitle">Estimez le prix d'un diamant avec les caracteristiques standards.</p>
+
+        <div id="error-box"></div>
+
+        <form id="predict-form" class="stack-md" onsubmit="predict(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="carat">Carat</label>
+                    <input type="number" id="carat" class="form-control" min="0.2" max="5.0" step="0.01" value="0.77" required />
+                </div>
+                <div class="form-group">
+                    <label for="clarity">Clarity</label>
+                    <select id="clarity" class="form-control">
+                        <option>SI2</option><option selected>SI1</option><option>VS1</option>
+                        <option>VS2</option><option>VVS2</option><option>VVS1</option>
+                        <option>I1</option><option>IF</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="x">x</label>
+                    <input type="number" id="x" class="form-control" min="0" max="15" step="0.01" value="5.64" required />
+                </div>
+                <div class="form-group">
+                    <label for="cut">Cut</label>
+                    <select id="cut" class="form-control">
+                        <option selected>Ideal</option><option>Premium</option>
+                        <option>Good</option><option>Very Good</option><option>Fair</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="depth">Depth</label>
+                    <input type="number" id="depth" class="form-control" min="50" max="75" step="0.01" value="61.70" required />
+                </div>
+                <div class="form-group">
+                    <label for="y">y</label>
+                    <input type="number" id="y" class="form-control" min="0" max="15" step="0.01" value="5.67" required />
+                </div>
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <select id="color" class="form-control">
+                        <option selected>E</option><option>I</option><option>J</option>
+                        <option>H</option><option>F</option><option>G</option><option>D</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="table">Table</label>
+                    <input type="number" id="table" class="form-control" min="50" max="75" step="0.01" value="56.00" required />
+                </div>
+                <div class="form-group">
+                    <label for="z">z</label>
+                    <input type="number" id="z" class="form-control" min="0" max="15" step="0.01" value="3.47" required />
+                </div>
+            </div>
+
+            <div class="actions-grid">
+                <button type="submit" class="btn btn-primary">Predire le prix</button>
+                <button type="button" class="btn btn-ghost" onclick="showJson()">Voir le JSON</button>
+                <button type="reset" class="btn btn-ghost">Reinitialiser</button>
+            </div>
+        </form>
+
+        <div id="result-box" style="display:none" class="result-box">
+            <span class="result-label" id="result-timing"></span>
+            <span class="result-label" style="margin-top:6px; display:block; font-size:1rem;">Prix estime</span>
+            <span class="result-price" id="result-price"></span>
+        </div>
+
+        <pre id="json-box" style="display:none;margin-top:12px;background:#0d1526;border:1px solid #1f2a44;border-radius:10px;padding:14px;overflow-x:auto;font-size:.9rem;color:#93c5fd;"></pre>
+    </section>
+</div>
+
+<script>
+    let lastPayload = null;
+    let lastResult = null;
+
+    function getPayload() {
+        return {
+            carat:   parseFloat(document.getElementById("carat").value),
+            cut:     document.getElementById("cut").value,
+            color:   document.getElementById("color").value,
+            clarity: document.getElementById("clarity").value,
+            depth:   parseFloat(document.getElementById("depth").value),
+            table:   parseFloat(document.getElementById("table").value),
+            x:       parseFloat(document.getElementById("x").value),
+            y:       parseFloat(document.getElementById("y").value),
+            z:       parseFloat(document.getElementById("z").value),
+        };
+    }
+
+    async function predict(e) {
+        e.preventDefault();
+        document.getElementById("error-box").innerHTML = "";
+        document.getElementById("result-box").style.display = "none";
+        document.getElementById("json-box").style.display = "none";
+
+        lastPayload = getPayload();
+        const t0 = performance.now();
+        try {
+            const resp = await fetch("/predict_one", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(lastPayload),
+            });
+            const ms = Math.round(performance.now() - t0);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+            lastResult = await resp.json();
+            document.getElementById("result-timing").textContent = `Prediction recue en ${ms} ms`;
+            document.getElementById("result-price").textContent = `$${lastResult.price.toFixed(2)}`;
+            document.getElementById("result-box").style.display = "block";
+        } catch (err) {
+            document.getElementById("error-box").innerHTML =
+                `<div class="alert alert-error">${err.message}</div>`;
+        }
+    }
+
+    function showJson() {
+        const box = document.getElementById("json-box");
+        if (box.style.display === "block") { box.style.display = "none"; return; }
+        const data = lastResult ?? getPayload();
+        box.textContent = JSON.stringify(data, null, 2);
+        box.style.display = "block";
+    }
+
+    async function testConnection() {
+        const el = document.getElementById("conn-status");
+        el.innerHTML = `<div class="alert" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.4);color:#a5b4fc;">Test en cours...</div>`;
+        try {
+            const t0 = performance.now();
+            const resp = await fetch("/health");
+            const ms = Math.round(performance.now() - t0);
+            if (resp.ok) {
+                el.innerHTML = `<div class="alert alert-success">API connectee ✓ (${ms} ms)</div>`;
+            } else {
+                el.innerHTML = `<div class="alert alert-error">HTTP ${resp.status}</div>`;
+            }
+        } catch (err) {
+            el.innerHTML = `<div class="alert alert-error">Connexion impossible</div>`;
+        }
+    }
+</script>
+{% endblock %}

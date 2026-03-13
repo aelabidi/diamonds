@@ -1,24 +1,53 @@
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import pandas as pd
 
-from diamonds.model import load_model 
+from diamonds.model import load_model
 from data_model import DiamondResponse, Diamond
 
 import time
 import asyncio
 
 
-app = FastAPI(title="Diamond API", 
-              description="API for Diamond application", 
+app = FastAPI(title="Diamond API",
+              description="API for Diamond application",
               version="0.1.0")
 
+_HERE = Path(__file__).parent
+app.mount("/static", StaticFiles(directory=_HERE / "static"), name="static")
+templates = Jinja2Templates(directory=_HERE / "templates")
 
-pipeline = load_model("pipeline", "local")
+pipeline = None
 
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Diamond API!"}
+def get_pipeline():
+    global pipeline
+    if pipeline is None:
+        try:
+            pipeline = load_model("pipeline", "local")
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Model not found locally. Train and save models/pipeline.pkl first, "
+                    "or use a remote API endpoint."
+                ),
+            ) from exc
+    return pipeline
+
+
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse("predict.html", {"request": request})
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 
 @app.post("/predict_one"#, response_model=DiamondResponse
@@ -26,7 +55,7 @@ def read_root():
 def predict_price(diamond: Diamond):
 
     diamond_df = pd.DataFrame([diamond.model_dump()])
-    prediction = pipeline.predict(diamond_df) # Table 
+    prediction = get_pipeline().predict(diamond_df)
     diamond_response = DiamondResponse(**diamond.model_dump(),
                                        price=prediction[0])
     return diamond_response
