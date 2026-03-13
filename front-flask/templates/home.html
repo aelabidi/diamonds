@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Home – Diamonds Price Prediction{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Diamonds Price Prediction App</h1>
+
+    <p>
+        This is a simple Flask application that allows you to predict the price of a diamond
+        based on its characteristics. You can input the features of the diamond and get an
+        estimated price using a machine learning model deployed as an API.
+    </p>
+
+    <!-- Logo -->
+    <img
+        class="home-logo"
+        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAP1BMVEVHcEwKESgKESgRESsKESgOESoTES0XEi4fEjItEzkhEzNDEUEhEzRjDUppDEyGBlSNB1cLESgXES4KESgKESiXRhehAAAAFXRSTlMANcsn/8T/wv//xP/C/5EIAr+GtXOG2sbdAAAAtUlEQVR4AX3LURZEQAwF0dARCQD2v9Z5DUB66rfOpUdZRunyPP0Cc0jOgrn4A9O0EJSgQdZ8Wupa6UJVUzNVj1ZmVhuqHIgVw//SBq/tuha38WDb9kPbOrSJsyMCtTcNGmdPNMSpT1rGCQgaZ/mAomo1IGhtqnKno4jaRGtTnOMNMqYOtIUnHC6IKYA7FczxgoxLZ3jM4YQI8KSMxhMiusWx4MCLevCiDryoCy86M1rec2E0/wCazgih6xhvCQAAAABJRU5ErkJggg=="
+        alt="Diamonds Logo"
+    />
+
+    <!-- Clockwise-rotating cats -->
+    <div class="cat-container">
+        <span class="cat" title="Clockwise cat 1">🐱</span>
+        <span class="cat" title="Clockwise cat 2">🐈</span>
+        <span class="cat" title="Clockwise cat 3">😺</span>
+        <span class="cat" title="Clockwise cat 4">🐱</span>
+        <span class="cat" title="Clockwise cat 5">🐈‍⬛</span>
+    </div>
+
+    <a class="btn btn-primary" href="{{ url_for('predict') }}">Try a Prediction →</a>
+</div>
+{% endblock %}

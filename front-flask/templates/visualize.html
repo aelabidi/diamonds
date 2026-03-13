@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Visualize – Diamonds Price Prediction{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Visualize Diamond Data</h2>
+
+    <!-- Clockwise-rotating cats -->
+    <div class="cat-container">
+        <span class="cat">🐱</span>
+        <span class="cat">🐈‍⬛</span>
+        <span class="cat">😺</span>
+        <span class="cat">🐈</span>
+    </div>
+
+    <p>
+        The charts below are generated client-side from the diamonds dataset using
+        <strong>Plotly.js</strong>. Data is fetched directly from the backend.
+    </p>
+
+    <div id="hist-chart" class="plot-container"></div>
+    <div id="scatter-chart" class="plot-container" style="margin-top:2rem;"></div>
+</div>
+
+<!-- Plotly CDN -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(async () => {
+    const apiHost = {{ api_host | tojson }};
+
+    let rows = [];
+    try {
+        const res = await fetch(`${apiHost}/diamonds_data`, { signal: AbortSignal.timeout(10000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        rows = await res.json();
+    } catch (err) {
+        // API not available — show a friendly message and demo charts with empty data
+        document.getElementById('hist-chart').innerHTML =
+            `<p style="color:#721c24;background:#f8d7da;padding:1rem;border-radius:8px;">
+                ⚠️ Could not load data from the API (<code>${apiHost}/diamonds_data</code>).<br/>
+                Please make sure the API is running.
+             </p>`;
+        return;
+    }
+
+    const prices  = rows.map(r => r.price);
+    const xs      = rows.map(r => r.x);
+    const ys      = rows.map(r => r.y);
+    const zs      = rows.map(r => r.z);
+    const cuts    = rows.map(r => r.cut);
+
+    // ── Histogram of prices ───────────────────────────────────────
+    Plotly.newPlot('hist-chart', [{
+        x: prices,
+        type: 'histogram',
+        nbinsx: 50,
+        marker: { color: '#6c63ff', opacity: 0.8 }
+    }], {
+        title: 'Distribution of Diamond Prices',
+        xaxis: { title: 'Price (USD)' },
+        yaxis: { title: 'Count' },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: '#f8f9fc'
+    }, { responsive: true });
+
+    // ── 3-D scatter x/y/z coloured by cut ────────────────────────
+    const cutSet = [...new Set(cuts)];
+    const traces = cutSet.map(cut => {
+        const idx = cuts.reduce((acc, c, i) => { if (c === cut) acc.push(i); return acc; }, []);
+        return {
+            type: 'scatter3d',
+            mode: 'markers',
+            name: cut,
+            x: idx.map(i => xs[i]),
+            y: idx.map(i => ys[i]),
+            z: idx.map(i => zs[i]),
+            marker: { size: 2, opacity: 0.6 }
+        };
+    });
+
+    Plotly.newPlot('scatter-chart', traces, {
+        title: 'X / Y / Z dimensions by Cut',
+        scene: {
+            xaxis: { title: 'X (length mm)' },
+            yaxis: { title: 'Y (width mm)' },
+            zaxis: { title: 'Z (depth mm)' }
+        },
+        paper_bgcolor: 'transparent'
+    }, { responsive: true });
+})();
+</script>
+{% endblock %}

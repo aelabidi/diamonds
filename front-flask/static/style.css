@@ -1,0 +1,200 @@
+/* ─── Reset & base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fc;
+    color: #333;
+}
+
+/* ─── Navbar ────────────────────────────────────────────────────── */
+.navbar {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+.navbar-brand {
+    color: #e0e0ff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: .5px;
+}
+
+.navbar-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.navbar-links a {
+    color: #b0b8e0;
+    text-decoration: none;
+    font-size: .95rem;
+    transition: color .2s;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+    color: #ffffff;
+}
+
+/* ─── Main container ────────────────────────────────────────────── */
+.container {
+    max-width: 860px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────── */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    margin-bottom: 1.5rem;
+}
+
+/* ─── Form elements ─────────────────────────────────────────────── */
+.form-group {
+    margin-bottom: 1.1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: .35rem;
+    font-size: .9rem;
+    color: #444;
+}
+
+.form-control {
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: .95rem;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108,99,255,.15);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────── */
+.btn {
+    display: inline-block;
+    padding: .55rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .1s, opacity .2s;
+}
+
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+    background: linear-gradient(135deg, #6c63ff, #48dbfb);
+    color: #fff;
+}
+
+.btn-primary:hover { opacity: .9; }
+
+/* ─── Alerts ────────────────────────────────────────────────────── */
+.alert {
+    border-radius: 8px;
+    padding: .85rem 1.2rem;
+    margin-bottom: 1.2rem;
+    font-size: .95rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ─── Prediction result ─────────────────────────────────────────── */
+.price-tag {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6c63ff;
+}
+
+/* ─── Logo on home page ─────────────────────────────────────────── */
+.home-logo {
+    width: 120px;
+    margin: 1.5rem 0;
+}
+
+/* ─── Rotating cats ─────────────────────────────────────────────── */
+/*
+   Clockwise rotation (sens horaire):
+   transform: rotate(360deg)  — positive degrees = clockwise in CSS
+*/
+@keyframes spin-cw {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.cat-container {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.cat {
+    font-size: 2.5rem;
+    display: inline-block;
+    animation: spin-cw linear infinite;
+    transform-origin: center;
+    user-select: none;
+}
+
+/* Slightly different durations for variety */
+.cat:nth-child(1) { animation-duration: 3s; }
+.cat:nth-child(2) { animation-duration: 4s; }
+.cat:nth-child(3) { animation-duration: 2.5s; }
+.cat:nth-child(4) { animation-duration: 5s; }
+.cat:nth-child(5) { animation-duration: 3.5s; }
+
+/* ─── Visualize page ─────────────────────────────────────────────── */
+.plot-container {
+    width: 100%;
+    min-height: 420px;
+}
+
+/* ─── Slider display ─────────────────────────────────────────────── */
+.slider-value {
+    font-weight: 700;
+    color: #6c63ff;
+    margin-left: .4rem;
+}
